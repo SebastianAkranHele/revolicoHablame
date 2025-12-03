@@ -1,3 +1,7 @@
+/* Importe o CSS das categorias */
+@import './categories.css';
+@import './listing-show.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+

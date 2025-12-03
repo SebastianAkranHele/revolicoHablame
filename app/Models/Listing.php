@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Listing extends Model {
     protected $fillable = [
         'user_id','category_id','title','slug','description',
-        'price','location','phone','status'
+        'price','location','phone',  'whatsapp','status'
     ];
 
     protected $casts = [
