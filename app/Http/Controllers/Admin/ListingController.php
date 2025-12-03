@@ -38,7 +38,7 @@ class ListingController extends Controller
                   ->orWhere('whatsapp', 'like', '%' . $request->search . '%'); // Adicionado busca no WhatsApp
         }
 
-        $listings = $query->latest()->paginate(15);
+        $listings = $query->latest()->paginate(12);
 
         // Se quiser passar categorias para filtro
         $categories = Category::all();

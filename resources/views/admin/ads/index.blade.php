@@ -18,12 +18,24 @@
             <!-- Barra de ações -->
             <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <!-- Botão Criar -->
-                <div>
+                <div class="flex space-x-2">
                     <a href="{{ route('admin.ads.create') }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="bi bi-plus-circle mr-2"></i>
                         Novo Anúncio
                     </a>
+
+                    <!-- Botão Buscar -->
+                    <button onclick="window.quickSearch()"
+                       class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 active:bg-gray-300 transition ease-in-out duration-150">
+                        <i class="bi bi-search mr-2"></i> Buscar
+                    </button>
+
+                    <!-- Botão Exportar -->
+                    <button onclick="window.exportListings()"
+                       class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 transition ease-in-out duration-150">
+                        <i class="bi bi-download mr-2"></i> Exportar
+                    </button>
                 </div>
 
                 <!-- Filtros rápidos -->
@@ -48,204 +60,185 @@
                 </div>
             </div>
 
-            <!-- Tabela de anúncios -->
-            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Imagem
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Título
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Categoria
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Preço
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Data
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Ações
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($listings as $listing)
-                            <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                <!-- Imagem -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($listing->images->first())
-                                        <div class="relative group">
-                                            <img src="{{ asset('storage/'.$listing->images->first()->path) }}"
-                                                 alt="Imagem do anúncio"
-                                                 class="w-16 h-16 object-cover rounded-lg border border-gray-200">
-                                            @if($listing->images->count() > 1)
-                                                <div class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                                    {{ $listing->images->count() }}
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @else
-                                        <div class="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-                                            <i class="bi bi-images text-gray-400 text-xl"></i>
+            <!-- Cards de anúncios -->
+            @if($listings->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @foreach($listings as $listing)
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                            <!-- Imagem principal -->
+                            <div class="relative h-48 overflow-hidden">
+                                @if($listing->images->first())
+                                    <img src="{{ asset('storage/'.$listing->images->first()->path) }}"
+                                         alt="{{ $listing->title }}"
+                                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                    @if($listing->images->count() > 1)
+                                        <div class="absolute top-3 right-3 bg-blue-600 text-white text-xs rounded-full w-8 h-8 flex items-center justify-center shadow-md">
+                                            +{{ $listing->images->count() - 1 }}
                                         </div>
                                     @endif
-                                </td>
-
-                                <!-- Título -->
-                                <td class="px-6 py-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <a href="{{ route('admin.ads.show', $listing) }}" class="hover:text-blue-600">
-                                            {{ Str::limit($listing->title, 50) }}
-                                        </a>
+                                @else
+                                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <i class="bi bi-images text-gray-400 text-4xl"></i>
                                     </div>
-                                    <div class="text-sm text-gray-500 mt-1">
-                                        {{ Str::limit($listing->location, 30) }}
-                                    </div>
-                                </td>
+                                @endif
 
-                                <!-- Categoria -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($listing->category)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ $listing->category->name }}
-                                        </span>
-                                    @else
-                                        <span class="text-gray-500 text-sm">-</span>
-                                    @endif
-                                </td>
-
-                                <!-- Preço -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($listing->price)
-                                        <div class="text-sm font-bold text-gray-900">
-                                            {{ number_format($listing->price, 2, ',', '.') }} KZ
-                                        </div>
-                                    @else
-                                        <span class="text-gray-500 text-sm">A negociar</span>
-                                    @endif
-                                </td>
-
-                                <!-- Status -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <!-- Status badge -->
+                                <div class="absolute top-3 left-3">
                                     @if($listing->status === 'active')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 shadow">
                                             <i class="bi bi-circle-fill text-[8px] mr-1"></i>
                                             Ativo
                                         </span>
                                     @elseif($listing->status === 'pending')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 shadow">
                                             <i class="bi bi-circle-fill text-[8px] mr-1"></i>
                                             Pendente
                                         </span>
                                     @elseif($listing->status === 'sold')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 shadow">
                                             <i class="bi bi-circle-fill text-[8px] mr-1"></i>
                                             Vendido
                                         </span>
                                     @elseif($listing->status === 'expired')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 shadow">
                                             <i class="bi bi-circle-fill text-[8px] mr-1"></i>
                                             Expirado
                                         </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            {{ ucfirst($listing->status) }}
-                                        </span>
                                     @endif
-                                </td>
+                                </div>
 
-                                <!-- Data -->
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div>{{ $listing->created_at->format('d/m/Y') }}</div>
-                                    <div class="text-gray-400">{{ $listing->created_at->format('H:i') }}</div>
-                                </td>
+                                <!-- Preço -->
+                                @if($listing->price)
+                                    <div class="absolute bottom-3 left-3">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-bold bg-white/90 backdrop-blur-sm text-gray-900 shadow">
+                                            {{ number_format($listing->price, 2, ',', '.') }} KZ
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
 
-                                <!-- Ações -->
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex items-center space-x-2">
-                                        <!-- Botão VER -->
-                                        <a href="{{ route('admin.ads.show', $listing) }}"
-                                           class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
-                                           title="Ver detalhes">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                            <!-- Conteúdo do card -->
+                            <div class="p-4">
+                                <!-- Categoria -->
+                                @if($listing->category)
+                                    <div class="mb-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $listing->category->name }}
+                                        </span>
+                                    </div>
+                                @endif
 
-                                        <!-- Botão EDITAR -->
-                                        <a href="{{ route('admin.ads.edit', $listing) }}"
-                                           class="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                                           title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                <!-- Título -->
+                                <h3 class="font-semibold text-gray-900 mb-1 truncate" title="{{ $listing->title }}">
+                                    <a href="{{ route('admin.ads.show', $listing) }}" class="hover:text-blue-600">
+                                        {{ $listing->title }}
+                                    </a>
+                                </h3>
 
-                                        <!-- Botão VISUALIZAR PÚBLICO -->
-                                        @if($listing->slug)
+                                <!-- Localização -->
+                                @if($listing->location)
+                                    <div class="flex items-center text-sm text-gray-600 mb-3">
+                                        <i class="bi bi-geo-alt mr-1"></i>
+                                        <span class="truncate" title="{{ $listing->location }}">
+                                            {{ Str::limit($listing->location, 30) }}
+                                        </span>
+                                    </div>
+                                @endif
+
+                                <!-- Informações adicionais -->
+                                <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                                    <div class="flex items-center">
+                                        <i class="bi bi-calendar mr-1"></i>
+                                        {{ $listing->created_at->format('d/m/Y') }}
+                                    </div>
+
+                                    @if($listing->views_count)
+                                        <div class="flex items-center">
+                                            <i class="bi bi-eye mr-1"></i>
+                                            {{ $listing->views_count }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Botões de ação -->
+                                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                    <!-- Botão VER -->
+                                    <a href="{{ route('admin.ads.show', $listing) }}"
+                                       class="flex-1 flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 mr-2"
+                                       title="Ver detalhes">
+                                        <i class="bi bi-eye mr-2"></i>
+                                        
+                                    </a>
+
+                                    <!-- Botão EDITAR -->
+                                    <a href="{{ route('admin.ads.edit', $listing) }}"
+                                       class="flex-1 flex items-center justify-center px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors duration-200 mr-2"
+                                       title="Editar">
+                                        <i class="bi bi-pencil mr-2"></i>
+
+                                    </a>
+
+                                    <!-- Botão VISUALIZAR PÚBLICO -->
+                                    @if($listing->slug)
                                         <a href="{{ route('public.show', $listing->slug) }}"
                                            target="_blank"
-                                           class="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
+                                           class="flex-1 flex items-center justify-center px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-200 mr-2"
                                            title="Visualizar público">
-                                            <i class="bi bi-box-arrow-up-right"></i>
-                                        </a>
-                                        @endif
+                                            <i class="bi bi-box-arrow-up-right mr-2"></i>
 
-                                        <!-- Botão ELIMINAR -->
-                                        <button type="button"
-                                                onclick="confirmDeleteListing({{ $listing->id }}, '{{ $listing->title }}')"
-                                                class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                                                title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center text-gray-500">
-                                        <i class="bi bi-megaphone text-5xl text-gray-300 mb-4"></i>
-                                        <p class="text-lg font-medium">Nenhum anúncio encontrado</p>
-                                        <p class="mt-1">Comece criando o seu primeiro anúncio!</p>
-                                        <a href="{{ route('admin.ads.create') }}"
-                                           class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                                            <i class="bi bi-plus-circle mr-2"></i>
-                                            Criar Primeiro Anúncio
                                         </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                    @endif
 
-                <!-- Paginação -->
-                @if($listings->hasPages())
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-700">
-                            Mostrando
-                            <span class="font-medium">{{ $listings->firstItem() }}</span>
-                            a
-                            <span class="font-medium">{{ $listings->lastItem() }}</span>
-                            de
-                            <span class="font-medium">{{ $listings->total() }}</span>
-                            resultados
+                                    <!-- Botão ELIMINAR -->
+                                    <button type="button"
+                                            onclick="confirmDeleteListing({{ $listing->id }}, '{{ addslashes($listing->title) }}')"
+                                            class="flex-1 flex items-center justify-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors duration-200"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash mr-2"></i>
+
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            {{ $listings->links() }}
+                    @endforeach
+                </div>
+            @else
+                <!-- Estado vazio -->
+                <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+                    <div class="flex flex-col items-center justify-center text-gray-500">
+                        <i class="bi bi-megaphone text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-lg font-medium mb-2">Nenhum anúncio encontrado</p>
+                        <p class="text-gray-600 mb-6">Comece criando o seu primeiro anúncio!</p>
+                        <a href="{{ route('admin.ads.create') }}"
+                           class="inline-flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                            <i class="bi bi-plus-circle mr-2"></i>
+                            Criar Primeiro Anúncio
+                        </a>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Paginação -->
+            @if($listings->hasPages())
+                <div class="mt-8 bg-white shadow-sm sm:rounded-lg overflow-hidden">
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="text-sm text-gray-700 mb-4 sm:mb-0">
+                                Mostrando
+                                <span class="font-medium">{{ $listings->firstItem() }}</span>
+                                a
+                                <span class="font-medium">{{ $listings->lastItem() }}</span>
+                                de
+                                <span class="font-medium">{{ $listings->total() }}</span>
+                                resultados
+                            </div>
+                            <div>
+                                {{ $listings->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
-                @endif
-            </div>
+            @endif
 
             <!-- Formulário oculto para eliminar -->
             <form id="deleteForm" method="POST" class="hidden">
@@ -254,13 +247,13 @@
             </form>
 
             <!-- Dicas rápidas -->
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div class="flex items-center">
                         <i class="bi bi-info-circle text-blue-600 mr-2"></i>
                         <span class="text-sm font-medium text-blue-800">Dica</span>
                     </div>
-                    <p class="mt-1 text-sm text-blue-700">Clique no ícone 👁️ para ver todos os detalhes de um anúncio.</p>
+                    <p class="mt-1 text-sm text-blue-700">Passe o mouse sobre as imagens para ver o efeito de zoom.</p>
                 </div>
 
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -268,7 +261,7 @@
                         <i class="bi bi-check-circle text-green-600 mr-2"></i>
                         <span class="text-sm font-medium text-green-800">Status</span>
                     </div>
-                    <p class="mt-1 text-sm text-green-700">Use os filtros para visualizar apenas anúncios por status.</p>
+                    <p class="mt-1 text-sm text-green-700">Identifique rapidamente o status pelo badge colorido no canto superior esquerdo.</p>
                 </div>
 
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -276,7 +269,7 @@
                         <i class="bi bi-exclamation-triangle text-red-600 mr-2"></i>
                         <span class="text-sm font-medium text-red-800">Atenção</span>
                     </div>
-                    <p class="mt-1 text-sm text-red-700">A ação de eliminar é permanente. Use com cuidado!</p>
+                    <p class="mt-1 text-sm text-red-700">A ação de eliminar é permanente. Todos os dados serão perdidos!</p>
                 </div>
             </div>
         </div>
@@ -496,164 +489,99 @@
             });
         };
 
-        // 5. Inicializar eventos quando DOM carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Adicionar botão de busca rápida se não existir
-            const actionBar = document.querySelector('.flex.flex-col.sm\\:flex-row.sm\\:items-center.sm\\:justify-between.gap-4');
-            if (actionBar) {
-                const searchBtn = document.createElement('button');
-                searchBtn.className = 'inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 active:bg-gray-300 transition ease-in-out duration-150';
-                searchBtn.innerHTML = '<i class="bi bi-search mr-2"></i> Buscar';
-                searchBtn.onclick = window.quickSearch;
+        // Configurar mensagens de sessão com SweetAlert2
+        @if(session('success'))
+            window.showSuccess('{{ session('success') }}');
+        @endif
 
-                actionBar.querySelector('div:first-child').appendChild(searchBtn);
-            }
+        @if(session('error'))
+            window.showError('{{ session('error') }}');
+        @endif
 
-            // Adicionar botão de exportar se não existir
-            const exportBtn = document.createElement('button');
-            exportBtn.className = 'inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 transition ease-in-out duration-150 ml-2';
-            exportBtn.innerHTML = '<i class="bi bi-download mr-2"></i> Exportar';
-            exportBtn.onclick = window.exportListings;
+        @if(session('warning'))
+            window.showWarning('{{ session('warning') }}');
+        @endif
 
-            actionBar.querySelector('div:first-child').appendChild(exportBtn);
-
-            // Adicionar tooltips aos ícones de ação
-            const tooltips = {
-                'bi-eye': 'Ver detalhes',
-                'bi-pencil': 'Editar anúncio',
-                'bi-box-arrow-up-right': 'Visualizar público',
-                'bi-trash': 'Eliminar anúncio'
-            };
-
-            document.querySelectorAll('td .flex.items-center.space-x-2 a, td .flex.items-center.space-x-2 button').forEach(el => {
-                const icon = el.querySelector('i');
-                if (icon && tooltips[icon.className]) {
-                    el.setAttribute('title', tooltips[icon.className]);
-
-                    // Adicionar evento para SweetAlert2 tooltip
-                    el.addEventListener('mouseenter', function(e) {
-                        // Você pode adicionar tooltip personalizado aqui se quiser
-                    });
-                }
-            });
-
-            // Configurar mensagens de sessão com SweetAlert2
-            @if(session('success'))
-                window.showSuccess('{{ session('success') }}');
-            @endif
-
-            @if(session('error'))
-                window.showError('{{ session('error') }}');
-            @endif
-
-            @if(session('warning'))
-                window.showWarning('{{ session('warning') }}');
-            @endif
-        });
-
-        // 6. Função para confirmar múltiplas eliminações (se implementar checkbox)
-        window.confirmBulkDelete = function(selectedIds) {
-            if (selectedIds.length === 0) {
-                window.showWarning('Selecione pelo menos um anúncio para eliminar');
-                return;
-            }
-
-            window.confirmDelete({
-                title: 'Eliminar Múltiplos Anúncios',
-                html: `Tem certeza que deseja eliminar <strong>${selectedIds.length}</strong> anúncios selecionados?<br><br>
-                      <span class="text-red-600 font-medium">⚠️ Esta ação eliminará:</span>
-                      <ul class="text-left list-disc pl-5 mt-2 text-sm">
-                          <li>Todos os anúncios selecionados</li>
-                          <li>Todas as imagens associadas</li>
-                          <li>Esta ação não pode ser revertida!</li>
-                      </ul>`,
-                icon: 'error',
-                confirmButtonText: `Sim, eliminar ${selectedIds.length}`,
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Aqui você enviaria uma requisição AJAX para eliminar múltiplos
-                    window.showLoading(`Eliminando ${selectedIds.length} anúncios...`);
-
-                    // Simulação
-                    setTimeout(() => {
-                        window.showSuccess(`${selectedIds.length} anúncios eliminados com sucesso!`);
-                        // Recarregar página
-                        setTimeout(() => window.location.reload(), 1500);
-                    }, 2000);
-                }
-            });
-        };
-
-        console.log('✅ SweetAlert2 configurado para lista de anúncios!');
+        console.log('✅ Cards de anúncios configurados!');
     </script>
 
     <!-- Estilos adicionais -->
     <style>
-        /* Melhorar responsividade da tabela */
-        @media (max-width: 768px) {
-            table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-
-            .flex.flex-col.sm\\:flex-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .flex.flex-col.sm\\:flex-row > div {
-                margin-bottom: 1rem;
-            }
-
-            .flex.space-x-2 {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-        }
-
-        /* Melhorar hover das ações */
-        td .flex.items-center.space-x-2 a,
-        td .flex.items-center.space-x-2 button {
-            transition: all 0.2s ease;
-            padding: 0.25rem;
-            border-radius: 0.375rem;
-        }
-
-        td .flex.items-center.space-x-2 a:hover,
-        td .flex.items-center.space-x-2 button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Status badges com melhor visual */
-        .inline-flex.items-center.px-2\\.5.py-0\\.5.rounded-full {
-            transition: all 0.2s ease;
-        }
-
-        .inline-flex.items-center.px-2\\.5.py-0\\.5.rounded-full:hover {
-            transform: scale(1.05);
-        }
-
-        /* Animações suaves */
-        tr {
+        /* Efeito de hover nos cards */
+        .bg-white.rounded-lg.shadow-md {
             transition: all 0.3s ease;
         }
 
-        /* Loading spinner para ações */
-        .loading-spinner {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(59, 130, 246, 0.3);
-            border-radius: 50%;
-            border-top-color: #3b82f6;
-            animation: spin 1s ease-in-out infinite;
+        .bg-white.rounded-lg.shadow-md:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Botões de ação responsivos */
+        @media (max-width: 640px) {
+            .grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .flex.items-center.justify-between.pt-3 {
+                flex-wrap: wrap;
+            }
+
+            .flex.items-center.justify-between.pt-3 > * {
+                flex: 0 0 calc(50% - 0.5rem);
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Animações suaves para imagens */
+        .relative.h-48.overflow-hidden img {
+            transition: transform 0.5s ease;
+        }
+
+        /* Badges de status com sombra */
+        .inline-flex.items-center.px-2\\.5.py-1.rounded-full {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Botões de ação com efeito */
+        .flex.items-center.justify-center.px-3.py-2 {
+            transition: all 0.2s ease;
+        }
+
+        .flex.items-center.justify-center.px-3.py-2:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Responsividade para paginação */
+        @media (max-width: 640px) {
+            .flex.flex-col.sm\:flex-row.sm\:items-center.sm\:justify-between {
+                text-align: center;
+            }
+
+            .text-sm.text-gray-700.mb-4 {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Tooltips para botões de ação */
+        [title] {
+            position: relative;
+        }
+
+        [title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 0.25rem;
         }
     </style>
 </x-app-layout>
