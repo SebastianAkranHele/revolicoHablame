@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $usersCount = User::count();
 
         // Últimos anúncios
-        $recentListings = Listing::with('category', 'images')->latest()->take(5)->get();
+        $recentListings = Listing::with('category', 'images')->latest()->take(6)->get();
 
         // Últimos usuários
         $recentUsers = User::latest()->take(5)->get();

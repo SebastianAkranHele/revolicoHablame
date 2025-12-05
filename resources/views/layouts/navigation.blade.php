@@ -6,13 +6,9 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ auth()->user()->is_admin ? route('admin.dashboard') : route('dashboard') }}">
-                        <!-- Aqui você pode usar seu logo customizado -->
                         <img src="{{ asset('img/logo.png') }}" alt="Logo" class="h-16 w-auto" />
-                        <!-- Ou manter o componente Blade -->
-                        {{-- <x-application-logo class="block h-9 w-auto fill-current text-gray-800" /> --}}
                     </a>
                 </div>
-
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -50,11 +46,18 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <form method="POST" action="{{ route('logout') }}">
+                        <!-- Formulário de logout com SweetAlert2 -->
+                        <form method="POST" action="{{ route('logout') }}" id="logout-form-desktop">
                             @csrf
-                            <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
-                                {{ __('Sair') }}
+                            <x-dropdown-link href="#"
+                                onclick="event.preventDefault(); confirmLogout();"
+                                class="text-red-600 hover:bg-red-50">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    </svg>
+                                    {{ __('Sair') }}
+                                </div>
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -86,10 +89,10 @@
 
             @if (auth()->user()->is_admin)
                 <x-responsive-nav-link :href="route('admin.ads.index')" :active="request()->routeIs('admin.ads.*')">
-                    {{ __('Ads') }}
+                    {{ __('Anúncios') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
-                    {{ __('Categories') }}
+                    {{ __('Categorias') }}
                 </x-responsive-nav-link>
             @endif
         </div>
@@ -102,14 +105,60 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <form method="POST" action="{{ route('logout') }}">
+                <!-- Formulário de logout mobile com SweetAlert2 -->
+                <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                     @csrf
-                    <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                    <x-responsive-nav-link href="#"
+                        onclick="event.preventDefault(); confirmLogout();"
+                        class="text-red-600 hover:bg-red-50">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            {{ __('Sair') }}
+                        </div>
                     </x-responsive-nav-link>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Script para confirmar logout com SweetAlert2 -->
+    <script>
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Sair da Conta',
+                text: 'Tem certeza que deseja sair do sistema?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, sair',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                customClass: {
+                    confirmButton: 'px-4 py-2 rounded-lg font-medium',
+                    cancelButton: 'px-4 py-2 rounded-lg font-medium'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Encontrar e submeter o formulário correto
+                    const desktopForm = document.getElementById('logout-form-desktop');
+                    const mobileForm = document.getElementById('logout-form-mobile');
+
+                    if (desktopForm) {
+                        desktopForm.submit();
+                    } else if (mobileForm) {
+                        mobileForm.submit();
+                    }
+                }
+            });
+        }
+
+        // Adicionar funcionalidade ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Menu de navegação carregado com SweetAlert2 para logout');
+        });
+    </script>
 </nav>

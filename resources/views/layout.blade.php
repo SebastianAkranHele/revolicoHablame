@@ -210,12 +210,13 @@
                 width: 100%;
             }
 
+            /* CORREÇÃO: Removemos position: fixed para telas pequenas */
             .categories-dropdown {
-                min-width: 100% !important;
-                position: fixed !important;
-                left: 10px !important;
-                right: 10px !important;
-                max-width: calc(100% - 20px) !important;
+                min-width: calc(100vw - 30px) !important;
+                max-width: calc(100vw - 30px) !important;
+                left: 15px !important;
+                right: 15px !important;
+                transform: translateX(0) !important;
             }
 
             .navbar-nav {
@@ -254,6 +255,14 @@
         @media (max-width: 576px) {
             .footer-basic {
                 padding: 1rem 0;
+            }
+
+            /* Ajuste extra para telas muito pequenas */
+            .categories-dropdown {
+                min-width: calc(100vw - 20px) !important;
+                max-width: calc(100vw - 20px) !important;
+                left: 10px !important;
+                right: 10px !important;
             }
         }
 
@@ -383,22 +392,7 @@
                         </div>
                     </li>
 
-                    @auth
-                        <!-- Links simples para usuario autenticado -->
-                        <li class="nav-item">
-                            <a href="{{ route('logout') }}" class="nav-link"
-                                onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                                Sair
-                            </a>
-                        </li>
-
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                    @else
-                        <!-- Links no autenticado -->
-                        <li class="nav-item">
-                            <a href="{{ route('login') }}" class="nav-link">Entrar</a>
-                        </li>
-                    @endauth
+                    
 
                 </ul>
             </div>
@@ -469,12 +463,12 @@
                 const categoryId = urlParams.get('category_id');
 
                 if (categoryId) {
-                    // Remover clase activa de todos
+                    // Remover classe ativa de todos
                     document.querySelectorAll('.category-item').forEach(item => {
                         item.classList.remove('category-active');
                     });
 
-                    // Añadir clase activa a la categoría correspondiente
+                    // Adicionar classe ativa à categoria correspondente
                     const activeItems = document.querySelectorAll(`[data-category-id="${categoryId}"]`);
                     activeItems.forEach(item => {
                         item.classList.add('category-active');
@@ -482,7 +476,7 @@
                 }
             }
 
-            // Funcionalidad de búsqueda en categorías
+            // Funcionalidade de busca em categorias
             const searchInput = document.querySelector('.search-categories');
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
@@ -500,18 +494,50 @@
                 });
             }
 
-            // Cerrar dropdown al hacer clic fuera
-            document.addEventListener('click', function(e) {
-                const dropdown = document.querySelector('.categories-dropdown');
-                const toggle = document.getElementById('categoriesDropdown');
+            // Melhorar dropdown para mobile
+            function setupMobileDropdown() {
+                const dropdownToggle = document.getElementById('categoriesDropdown');
+                const dropdownMenu = document.querySelector('.categories-dropdown');
 
-                if (dropdown && toggle &&
-                    !dropdown.contains(e.target) &&
-                    !toggle.contains(e.target)) {
-                    const bsDropdown = bootstrap.Dropdown.getInstance(toggle);
-                    if (bsDropdown) bsDropdown.hide();
+                if (window.innerWidth <= 992 && dropdownToggle && dropdownMenu) {
+                    // Corrigir posicionamento do dropdown
+                    dropdownMenu.style.position = 'fixed';
+                    dropdownMenu.style.top = 'auto';
+                    dropdownMenu.style.bottom = '0';
+                    dropdownMenu.style.left = '50%';
+                    dropdownMenu.style.transform = 'translateX(-50%)';
+                    dropdownMenu.style.width = '90%';
+                    dropdownMenu.style.maxWidth = '500px';
+                    dropdownMenu.style.maxHeight = '60vh';
+                    dropdownMenu.style.borderRadius = '20px 20px 0 0';
+                    dropdownMenu.style.marginTop = '0';
+
+                    // Fechar dropdown ao clicar fora (melhorado)
+                    document.addEventListener('click', function(e) {
+                        if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                            if (bsDropdown) {
+                                bsDropdown.hide();
+                            }
+                        }
+                    });
+                } else if (dropdownMenu) {
+                    // Resetar estilos para desktop
+                    dropdownMenu.style.position = '';
+                    dropdownMenu.style.top = '';
+                    dropdownMenu.style.bottom = '';
+                    dropdownMenu.style.left = '';
+                    dropdownMenu.style.transform = '';
+                    dropdownMenu.style.width = '';
+                    dropdownMenu.style.maxWidth = '';
+                    dropdownMenu.style.maxHeight = '70vh';
+                    dropdownMenu.style.borderRadius = '12px';
                 }
-            });
+            }
+
+            // Inicializar e adicionar listener de resize
+            setupMobileDropdown();
+            window.addEventListener('resize', setupMobileDropdown);
 
             // Resaltar categoría activa al cargar
             highlightActiveCategory();
@@ -520,14 +546,6 @@
             window.addEventListener('popstate', function() {
                 setTimeout(highlightActiveCategory, 100);
             });
-
-            // Mejorar experiencia en móviles
-            if (window.innerWidth <= 992) {
-                const dropdownMenu = document.querySelector('.categories-dropdown');
-                if (dropdownMenu) {
-                    dropdownMenu.style.maxHeight = '60vh';
-                }
-            }
         });
     </script>
 
